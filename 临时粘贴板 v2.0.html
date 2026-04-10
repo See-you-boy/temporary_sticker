@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>临时粘贴板</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: auto;
+        }
+        #paste-area {
+            border: 2px dashed #ccc;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            text-align: left;
+            font-size: 20px;
+            /*white-space: pre-wrap;  保留文本的换行符 */
+            overflow-y: auto;
+        }
+        .pasted-image {
+            margin: 10px;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            /* margin-left: auto;
+            margin-right: auto; */
+            float: left;
+        }
+        .pasted-text {
+            margin: 10px;
+            white-space: pre-wrap; /* 保留文本的换行符 */
+        }
+    </style>
+</head>
+<body>
+    <h1>粘贴内容到页面上</h1>
+    <div id="paste-area"></div>
+
+    <script>
+        const pasteArea = document.getElementById('paste-area');
+
+        // 监听粘贴事件
+        window.addEventListener('paste', (e) => {
+            e.preventDefault(); // 阻止默认的粘贴行为
+
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            let hasImage = false;
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.type.indexOf('image') === 0) {
+                    hasImage = true;
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.classList.add('pasted-image');
+                        pasteArea.appendChild(img);
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+
+            if (!hasImage) {
+                // 如果没有图片，则处理文本粘贴
+                const text = (e.clipboardData || e.originalEvent.clipboardData).getData('text/plain');
+                const textDiv = document.createElement('div');
+                textDiv.textContent = text;
+                textDiv.classList.add('pasted-text');
+                pasteArea.appendChild(textDiv);
+            }
+        });
+    </script>
+</body>
+</html>

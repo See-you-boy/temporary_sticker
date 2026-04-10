@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>临时粘贴板</title>
+    <style>
+        #drop-area {
+            border: 2px dashed #ccc;
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            font-size: 20px;
+        }
+        #paste-area {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pasted-image {
+            margin: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="drop-area">将图片拖到这里或粘贴图片</div>
+    <div id="paste-area"></div>
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const pasteArea = document.getElementById('paste-area');
+
+        // 监听粘贴事件
+        window.addEventListener('paste', (e) => {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.type.indexOf('image') === 0) {
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.classList.add('pasted-image');
+                        pasteArea.appendChild(img);
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+        });
+
+        // 允许拖放图片到dropArea
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            handleFiles(files);
+        });
+
+        function handleFiles(files) {
+            ([...files]).forEach(uploadFile);
+        }
+
+        function uploadFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.classList.add('pasted-image');
+                pasteArea.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
